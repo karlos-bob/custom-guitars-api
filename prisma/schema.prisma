@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CustomOrderStatus {
+  RECEIVED
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  orders       CustomOrder[]
+}
+
+model CustomOrder {
+  id                 String            @id @default(uuid())
+  status             CustomOrderStatus @default(RECEIVED)
+  currency           String
+  estimatedTotalCost Int
+  selections         Json
+  comments           Json
+  firstName          String
+  lastName           String
+  email              String
+  country            String
+  streetAddress      String
+  city               String
+  state              String
+  postCode           String
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  userId             String?
+  user               User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([email])
+  @@map("custom_orders")
+}
+
+model ContactSubmission {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  message   String
+  subject   String?
+  phone     String?
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("contact_submissions")
+}
+
+/// Catalog guitar: same shape as order selections/comments, no user fields.
+model Product {
+  id                 String   @id @default(uuid())
+  name               String
+  slug               String   @unique
+  description        String?
+  currency           String
+  estimatedTotalCost Int
+  selections         Json
+  comments           Json
+  bodyDesignId       String?
+  modelKey           String?
+  published          Boolean  @default(true)
+  sortOrder          Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([published, sortOrder])
+  @@map("products")
+}
